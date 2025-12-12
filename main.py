@@ -8,6 +8,8 @@ import matplotlib
 matplotlib.use('TkAgg')
 import numpy as np
 
+from exap_api import ExapApi
+
 
 class GraphApp:
     def __init__(self, root):
@@ -283,8 +285,8 @@ class GraphApp:
         def on_ok():
             try:
                 weight = float(weight_var.get())
-                if weight <= 0:
-                    raise ValueError
+                # if weight <= 0:
+                #     raise ValueError
                 result["weight"] = weight
                 dialog.destroy()
             except ValueError:
@@ -432,7 +434,7 @@ class GraphApp:
 
         is_directed = graph.is_directed()
 
-        #ребра
+        # ребра
         for u, v, data in graph.edges(data=True):
             x1, y1 = pos[u]
             x2, y2 = pos[v]
@@ -450,7 +452,7 @@ class GraphApp:
                 else:
                     ax.plot([x1, x2], [y1, y2], color='gray', linewidth=1.5, alpha=0.8)
             else:
-                #петля для прикола
+                # петля для прикола
                 circle = plt.Circle((x1, y1), radius=1.5, color='gray', fill=False, linewidth=1.5)
                 ax.add_patch(circle)
 
@@ -464,7 +466,7 @@ class GraphApp:
                     fontsize=10, ha='center', va='center',
                     bbox=dict(boxstyle="round,pad=0.3", facecolor="white", edgecolor="gray", alpha=0.7))
 
-        #вершины
+        # вершины
         for node, (x, y) in pos.items():
             circle = plt.Circle((x, y), radius=1.1, color='lightblue', alpha=0.8, ec='black', linewidth=2)
             ax.add_patch(circle)
@@ -648,7 +650,6 @@ class GraphApp:
         order_map = {node: i + 1 for i, node in enumerate(reversed(order))}
         self.visualize_scc_step_by_step(scc_components, order_map, transposed)
 
-
     def visualize_scc_step_by_step(self, scc_components, order_map, transposed_graph):
         step_window = tk.Toplevel(self.root)
         step_window.title("Алгоритм Косарайю — пошаговая визуализация")
@@ -762,10 +763,10 @@ class GraphApp:
 
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6), dpi=100)
 
-        #Левая панель: исходный граф
+        # Левая панель: исходный граф
         self._draw_graph_on_ax(ax1, self.graph, pos, "Исходный граф")
 
-        #Правая панель: MST (неориентированный)
+        # Правая панель: MST (неориентированный)
         mst_graph = nx.Graph()
         mst_graph.add_nodes_from(self.graph.nodes())
         for u, v, w in mst_edges:
@@ -773,7 +774,7 @@ class GraphApp:
 
         self._draw_graph_on_ax(ax2, mst_graph, pos, "Минимальное остовное дерево (MST)")
 
-        #порядок добавления
+        # порядок добавления
         for node, (x, y) in pos.items():
             if node in order_map:
                 order_num = order_map[node]
@@ -839,7 +840,7 @@ class GraphApp:
         self.print_output(f"Вершины: {sorted(nodes)}")
         self.print_output(f"Количество вершин: {n}")
 
-        #Инициализация
+        # Инициализация
         key = [INF] * n  # key[i] — минимальный вес ребра для подключения вершины i
         frt = [-1] * n  # frt[i] — предок вершины i в MST (-1 = нет предка)
         in_mst = [False] * n  # включена ли вершина в дерево
@@ -860,7 +861,7 @@ class GraphApp:
         mst_edges = []
         order_of_addition = {}
 
-        #Основной цикл
+        # Основной цикл
         for step in range(n):
             self.print_output(f"\n→ Шаг {step + 1}/{n}:")
 
@@ -1171,18 +1172,12 @@ class GraphApp:
         canvas.draw()
 
     def dinic_algorithm(self):
-        self.print_output("\n" + "=" * 60)
-        self.print_output("АЛГОРИТМ ДИНИЦА: Максимальный поток")
-        self.print_output("=" * 60)
-        self.print_output("Реализуйте этот метод в своей части работы!")
-        self.print_output("Для работы алгоритма нужны источник и сток.")
+        api = ExapApi(self.root, self.graph)
+        api.dinic()
 
     def johnson_algorithm(self):
-        self.print_output("\n" + "=" * 60)
-        self.print_output("АЛГОРИТМ ДЖОНСОНА: Поиск всех циклов")
-        self.print_output("=" * 60)
-        self.print_output("Реализуйте этот метод в своей части работы!")
-        self.print_output("Алгоритм находит все элементарные циклы в графе.")
+        api = ExapApi(self.root, self.graph)
+        api.johnson()
 
 
 def main():
