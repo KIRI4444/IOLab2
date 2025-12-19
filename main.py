@@ -134,7 +134,7 @@ class GraphApp:
 
             self.update_graph_info()
             self.draw_graph()
-            self.print_output("✅ Граф с 4 вершинами и отрицательными весами загружен!")
+            self.print_output(" Граф с 4 вершинами и отрицательными весами загружен!")
     def load_sample_graph(self):
         """1 алгориитм"""
         if messagebox.askyesno("Подтверждение", "Вы уверены, что хотите очистить текущий граф и загрузить пример?"):
@@ -179,7 +179,7 @@ class GraphApp:
 
             self.update_graph_info()
             self.draw_graph()
-            self.print_output("✅ Готовый граф (7 вершин) загружен!")
+            self.print_output(" Готовый граф (7 вершин) загружен!")
 
     def load_sample_graph_directed(self):
         """2 алгоритм"""
@@ -188,45 +188,41 @@ class GraphApp:
             self.clear_graph()
 
             # Вершины
-            nodes = [str(i) for i in range(1, 9)]  # '1', '2', ..., '8'
+            nodes = [str(i) for i in range(1, 8)]
             for node in nodes:
                 self.graph.add_node(node)
 
             # Ориентированные рёбра (как на рисунке)
-            edges = [
-                ('1', '2'),
-                ('2', '3'),
-                ('2', '5'),
-                ('4', '3'),
-                ('3', '8'),
-                ('8', '4'),
-                ('2', '6'),
-                ('5', '1'),
-                ('5', '6'),
-                ('6', '7'),
-                ('7', '6'),  # Цикл между 6 и 7
-                ('7', '3'),
-                ('7', '8'),
-            ]
 
-            for u, v in edges:
-                self.graph.add_edge(u, v)  # без весов — можно добавить вес=1, если нужно
+            edges = [
+                ('3', '1', 3),
+                ('1', '2', 7),
+                ('2', '5', 3),
+                ('3', '6', 7),
+                ('6', '7', 4),
+                ('7', '5', 9),
+                ('1', '4', 1),
+                ('4', '2', 6),
+                ('4', '7', 5),
+                ('4', '6', 8)
+            ]
+            for u, v, weight in edges:
+                self.graph.add_edge(u, v, weight=weight)  # без весов — можно добавить вес=1, если нужно
 
             # Позиции для визуализации (расположим вершины как на рисунке)
             self.pos = {
-                '1': (-6, 2),
-                '2': (-2, 2),
-                '3': (2, 2),
-                '4': (6, 2),
-                '5': (-6, -2),
-                '6': (-2, -2),
-                '7': (2, -2),
-                '8': (6, -2),
+                '1': (-6, 6),
+                '2': (6, 6),
+                '3': (-10, 0),
+                '4': (0, 0),
+                '5': (10, 0),
+                '6': (-6, -6),
+                '7': (6, -6)
             }
 
             self.update_graph_info()
             self.draw_graph()
-            self.print_output("✅ Ориентированный граф (8 вершин) загружен!")
+            self.print_output(" Ориентированный граф (8 вершин) загружен!")
 
     def load_sample_graph_5v(self):
         """Загружает ориентированный граф с 5 вершинами и весами, как на скрине"""
@@ -234,7 +230,7 @@ class GraphApp:
             self.clear_graph()
 
             # Вершины
-            nodes = [str(i) for i in range(1, 6)]  # '1', '2', ..., '5'
+            nodes = [str(i) for i in range(1, 6)]
             for node in nodes:
                 self.graph.add_node(node)
 
@@ -243,30 +239,28 @@ class GraphApp:
                 ('1', '2', 2),
                 ('1', '4', 4),
                 ('1', '5', 6),
-                ('2', '3', 2),
+                ('1', '3', 7),
                 ('2', '4', 1),
-                ('2', '5', 7),
-                ('3', '5', 1),
                 ('4', '2', 2),
+                ('2', '5', 2),
                 ('4', '5', 1),
-                ('5', '3', 2),
+                ('2', '3', 2),
+                ('5', '3', 1)
             ]
 
             for u, v, weight in edges:
                 self.graph.add_edge(u, v, weight=weight)
-
-            # Позиции для визуализации (расположим как на рисунке)
             self.pos = {
-                '1': (-12, 0),  # слева
-                '2': (-5, 5),  # сверху
-                '3': (5, 5),  # справа сверху
-                '4': (-4, -4),  # снизу
-                '5': (3, -3),  # справа снизу
+                '1': (-0.8, 0),
+                '2': (-0.3, 0.5),
+                '4': (-0.3, -0.5),
+                '5': (0.7, -0.5),
+                '3': (0.7, 0.5)
             }
 
             self.update_graph_info()
-            self.draw_graph()
-            self.print_output("✅ Граф с 5 вершинами и весами загружен!")
+            self.draw_astar()
+            self.print_output("граф для 3 примера загружен")
 
     def load_sample_graph_7v_centered(self):
         """Загружает ориентированный граф с 7 вершинами и весами, как на скрине"""
@@ -709,6 +703,101 @@ class GraphApp:
         ax.set_aspect('equal')
         ax.grid(True, linestyle='--', alpha=0.3)
 
+    def draw_astar(self):
+        self.ax.clear()
+        self.node_patches = {}
+        self.node_labels = {}
+        self.edge_lines = {}
+        self.edge_labels = {}
+        graph_pos = {
+            '1': (-8, 0),
+            '2': (-3, 5),
+            '4': (-3, -5),
+            '5': (7, -5),
+            '3': (7, 5)
+        }
+
+        if not self.graph.nodes():
+            self.ax.text(0.5, 0.5, "Граф пуст", ha='center', va='center', fontsize=12)
+            self.ax.set_xlim(-10, 10)
+            self.ax.set_ylim(-10, 10)
+            self.ax.set_axis_off()
+            self.canvas.draw()
+            return
+
+        if graph_pos is None:
+            graph_pos = nx.spring_layout(self.graph, seed=42, k=5.0, iterations=50)
+            for node in graph_pos:
+                x, y = graph_pos[node]
+                graph_pos[node] = (x * 8, y * 8)
+        else:
+            for node in self.graph.nodes():
+                if node not in graph_pos:
+                    graph_pos[node] = (np.random.uniform(-9, 9), np.random.uniform(-9, 9))
+
+        # Рисуем рёбра
+        for u, v, data in self.graph.edges(data=True):
+            x1, y1 = graph_pos[u]
+            x2, y2 = graph_pos[v]
+            dx = x2 - x1
+            dy = y2 - y1
+            length = np.sqrt(dx * dx + dy * dy)
+            if length > 0:
+                shrink = 1.1
+                x2_adj = x1 + dx * (length - shrink) / length
+                y2_adj = y1 + dy * (length - shrink) / length
+            else:
+                x2_adj, y2_adj = x2, y2
+
+            arrow = self.ax.annotate("",
+                                     xy=(x2_adj, y2_adj),
+                                     xytext=(x1, y1),
+                                     arrowprops=dict(arrowstyle="->", color='gray', linewidth=1.5),
+                                     annotation_clip=False
+                                     )
+            self.edge_lines[(u, v)] = arrow
+
+            weight = data.get('weight', 1.0)
+            mid_x = (x1 + x2) / 2
+            mid_y = (y1 + y2) / 2
+            offset_x = -0.4 * dy / (length + 1e-6)
+            offset_y = 0.4 * dx / (length + 1e-6)
+            label = self.ax.text(mid_x + offset_x, mid_y + offset_y, f"{weight:.1f}",
+                                 fontsize=10, ha='center', va='center',
+                                 bbox=dict(boxstyle="round,pad=0.3", facecolor="white", edgecolor="gray", alpha=0.7)
+                                 )
+            self.edge_labels[(u, v)] = label
+
+        for node, (x, y) in graph_pos.items():
+            circle = plt.Circle((x, y), radius=1.1, color='lightblue', alpha=0.8, ec='black', linewidth=2)
+            self.node_patches[node] = circle
+            self.ax.add_patch(circle)
+            label = self.ax.text(x, y, node, fontsize=9, fontweight='bold', ha='center', va='center')
+            self.node_labels[node] = label
+
+        # Заголовок
+        if self.mode == "edge":
+            title = "Режим добавления рёбер: клик на нач вершину"
+            if self.edge_start:
+                title = f"Режим добавления рёбер: нач вершина '{self.edge_start}', клик на конечную"
+        elif self.mode == "delete_edge":
+            title = "Режим удаления рёбер"
+            if self.edge_start:
+                title = f"Выбрана вершина '{self.edge_start}'. Клик на вторую."
+        else:
+            title = "Режим перетаскивания"
+        self.ax.set_title(title, fontsize=14, fontweight='bold')
+
+        self.ax.set_axis_off()
+        self.ax.set_xlim(-12, 12)
+        self.ax.set_ylim(-12, 12)
+        self.ax.set_aspect('equal')
+        self.ax.grid(True, linestyle='--', alpha=0.3)
+        self.ax.set_xticks(np.arange(-12, 13, 2))
+        self.ax.set_yticks(np.arange(-12, 13, 2))
+        self.figure.tight_layout()
+        self.canvas.draw()
+
     def draw_graph(self):
         self.ax.clear()
         self.node_patches = {}
@@ -767,7 +856,6 @@ class GraphApp:
                                  )
             self.edge_labels[(u, v)] = label
 
-        # Рисуем вершины
         for node, (x, y) in self.pos.items():
             circle = plt.Circle((x, y), radius=1.1, color='lightblue', alpha=0.8, ec='black', linewidth=2)
             self.node_patches[node] = circle
@@ -1333,13 +1421,20 @@ class GraphApp:
         return result["vertex"]
 
     def visualize_a_star_path(self, path, start, goal, cost):
+        graph_pos = {
+            '1': (-8, 0),
+            '2': (-3, 5),
+            '4': (-3, -5),
+            '5': (7, -5),
+            '3': (7, 5)
+        }
         step_window = tk.Toplevel(self.root)
         step_window.title("Алгоритм A* — найденный путь")
         step_window.geometry("1500x700")
 
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6), dpi=100)
 
-        pos = {node: self.pos[node] for node in self.pos if node in self.graph}
+        pos = {node: graph_pos[node] for node in graph_pos if node in self.graph}
 
         # Левая панель: исходный граф
         self._draw_graph_on_ax(ax1, self.graph, pos, "Исходный граф")
